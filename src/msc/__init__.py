@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from hlc.writer import Writer
+from msc.writer import Writer
 
 __all__ = [
     "Writer",

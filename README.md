@@ -1,7 +1,7 @@
-# High Level C
+# Multistaged C
 
-[![PyPI - Version](https://img.shields.io/pypi/v/hlc.svg)](https://pypi.org/project/hlc)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hlc.svg)](https://pypi.org/project/hlc)
+[![PyPI - Version](https://img.shields.io/pypi/v/msc.svg)](https://pypi.org/project/msc)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/msc.svg)](https://pypi.org/project/msc)
 
 -----
 
@@ -13,9 +13,9 @@
 ## Installation
 
 ```console
-pip install hlc
+pip install msc
 ```
 
 ## License
 
-`hlc` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
+`msc` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.

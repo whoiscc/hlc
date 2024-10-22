@@ -1,4 +1,4 @@
-from hlc import Writer
+from msc import Writer
 
 
 def test_empty():
