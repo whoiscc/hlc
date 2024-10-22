@@ -1,13 +1,13 @@
-from msc.items import Function
+from msc.terms import Function
 
 
 def test_empty_function():
-    f = Function("f")
+    f = Function("f", "void")
     assert f.block.stmts == []
 
 
 def test_loop():
-    f = Function("f")
+    f = Function("f", "void")
     with f.block.loop("loop check") as b:
         b <<= "loop stmt"
     assert len(f.block.stmts) == 1
@@ -17,7 +17,7 @@ def test_loop():
 
 
 def test_if():
-    f = Function("f")
+    f = Function("f", "void")
     with f.block.cases().when("if check") as b:
         b <<= "if stmt"
     assert len(f.block.stmts) == 1
@@ -28,7 +28,7 @@ def test_if():
 
 
 def test_cases():
-    f = Function("f")
+    f = Function("f", "void")
     cases = f.block.cases()
     with cases.when("if check") as b:
         b <<= "if stmt"
@@ -48,7 +48,7 @@ def test_cases():
 
 
 def test_multiple_cases():
-    f = Function("f")
+    f = Function("f", "void")
     with f.block.cases().when("if check") as b:
         b <<= "if stmt"
     with f.block.cases().when("another if check") as b:

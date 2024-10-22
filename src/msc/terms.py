@@ -2,8 +2,9 @@ from contextlib import contextmanager
 
 
 class Function:
-    def __init__(self, identifier):
+    def __init__(self, identifier, return_ty):
         self.id = identifier
+        self.return_ty = return_ty
         self.params = []
         self.block = Block()
 
@@ -93,3 +94,14 @@ class Branch:
         self.check = check
         self.pos = pos
         self.neg = neg
+
+
+class Literal:
+    def __init__(self, value):
+        self.value = value
+
+
+class Op:
+    def __init__(self, operator, exprs):
+        self.operator = operator
+        self.exprs = exprs
