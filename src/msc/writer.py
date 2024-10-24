@@ -13,6 +13,9 @@ class Writer:
             self.buf.append(" " * (self.level * self.level_space))
         self.buf.append(content)
 
+    def space(self):
+        self.buf.append(" ")
+
     def newline(self):
         self.buf.append("\n")
 

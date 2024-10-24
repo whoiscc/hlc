@@ -31,28 +31,39 @@ class Array:
         return hash((self.inner, self.size))
 
 
-def write_typed(ty, write_term, writer):
-    if isinstance(ty, Base):
-        names = {UNIT: "void", I32: "int32_t", U8: "uint8_t", BOOL: "int"}
-        writer <<= names[ty]
-        write_term(writer)
-        return
-    if isinstance(ty, Pointer):
-        write(ty.inner, writer)
-        if isinstance(ty.inner, Pointer):
-            writer <<= "*"
-        else:
-            writer <<= " *"
-        write_term(writer)
-        return
-    if isinstance(ty, Array):
-        write_typed(ty.inner, write_term, writer)
-        with writer.brackets():
-            writer <<= str(ty.size)
-        return
-    raise TypeError(ty)
+def write(writer, ty, then=None):
+    match ty:
+        case Base():
+            type_names = {UNIT: "void", I32: "int32_t", U8: "uint8_t", BOOL: "int"}
+            writer <<= type_names[ty]
+            if then is not None:
+                writer.space()
+                then(writer)
+        case Pointer():
+
+            def inner(writer):
+                with writer.parens():
+                    writer <<= "*"
+                    if then is not None:
+                        then(writer)
+
+            write(writer, ty.inner, inner)
+        case Array():
+
+            def inner(writer):
+                with writer.parens():
+                    if then is not None:
+                        then(writer)
+                    with writer.brackets():
+                        writer <<= str(ty.size)
+
+            write(writer, ty.inner, inner)
+        case _:
+            raise TypeError(ty)
 
 
-def write(ty, writer):
-    # TODO: caution on this
-    write_typed(ty, lambda _: None, writer)
+def write_typed(writer, name, ty):
+    def then(writer):
+        writer <<= name
+
+    write(writer, ty, then)

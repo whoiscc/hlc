@@ -105,3 +105,7 @@ class Op:
     def __init__(self, operator, exprs):
         self.operator = operator
         self.exprs = exprs
+
+
+# def write(term, writer):
+#     pass
