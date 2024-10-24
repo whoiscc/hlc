@@ -109,8 +109,15 @@ class Op:
         self.exprs = exprs
 
 
+class Interp:
+    def __init__(self, fmt, **variables):
+        self.fmt = fmt
+        self.vars = variables
+
+
 def write(writer, term, var_names=None):
-    var_names = var_names or {}
+    if var_names is None:
+        var_names = {}
 
     def declare(var):
         assert var not in var_names
@@ -138,11 +145,40 @@ def write(writer, term, var_names=None):
                     writer.newline()
                 for _, stmt in zip(writer.lines(), term.stmts):
                     write(writer, stmt, var_names)
+                    if not isinstance(stmt, (Loop, Branch, Block)):
+                        writer <<= ";"
 
         case Declare():
             name = declare(term.var)
             ty.writer_declare(writer, term.var.ty, name)
-            writer <<= ";"
+
+        case Loop():
+            writer <<= "while"
+            writer.space()
+            with writer.parens():
+                write(writer, term.check, var_names)
+            writer.space()
+            write(writer, term.block, var_names)
+
+        case Branch():
+            writer <<= "if"
+            writer.space()
+            with writer.parens():
+                write(writer, term.check, var_names)
+            writer.space()
+            write(writer, term.pos, var_names)
+            writer.space()
+            writer <<= "else"
+            writer.space()
+            write(writer, term.neg, var_names)
+
+        case Literal():
+            match term.value:
+                case int():
+                    writer <<= str(term.value)
+
+        case Interp():
+            writer <<= term.fmt.format(**{k: var_names[var] for k, var in term.vars.items()})
 
         case _:
             raise TypeError(term)

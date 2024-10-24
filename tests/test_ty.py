@@ -1,3 +1,5 @@
+import pytest
+
 from msc import Writer
 from msc.ty import U8, UNIT, Array, Pointer, write, writer_declare
 
@@ -41,3 +43,23 @@ def test_write_compound():
     assert_write(Array(Array(U8, 32), 32), "uint8_t (([32])[32])")
     assert_write(Pointer(Array(U8, 32)), "uint8_t (*([32]))")
     assert_write(Array(Pointer(U8), 32), "uint8_t ((*)[32])")
+
+
+def test_set():
+    types = set()
+    types.add(U8)
+    assert U8 in types
+    types.add(Pointer(U8))
+    assert Pointer(U8) in types
+    types.add(Pointer(U8))
+    assert len(types) == 2
+    types.add(Array(U8, 32))
+    types.add(Array(U8, 32))
+    assert len(types) == 3
+    types.add(Pointer(Pointer(U8)))
+    assert len(types) == 4
+
+
+def test_write_type_error():
+    with pytest.raises(TypeError):
+        write(Writer(), None)

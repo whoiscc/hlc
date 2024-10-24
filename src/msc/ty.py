@@ -67,7 +67,7 @@ def write(writer, ty, typed=None):
                 with writer.brackets():
                     for command in commands:
                         execute(writer, command)
-            case _:
+            case _:  # no cov
                 raise ValueError(command)
 
     for command in commands:

@@ -1,7 +1,8 @@
 from textwrap import dedent
-from msc.terms import Function, Variable, write
-from msc.ty import U8, UNIT
+
 from msc import Writer
+from msc.terms import Function, Interp, Literal, Variable, write
+from msc.ty import U8, UNIT, Pointer
 
 
 def test_empty_function():
@@ -66,6 +67,7 @@ def test_multiple_cases():
     assert stmt.pos.stmts == ["another if stmt"]
     assert stmt.neg.stmts == []
 
+
 def assert_write(term, content):
     w = Writer()
     write(w, term)
@@ -74,6 +76,10 @@ def assert_write(term, content):
 
 def test_write_empty_function():
     assert_write(Function("foo", UNIT), "void foo() {}")
+
+
+def test_write_function_return_type():
+    assert_write(Function("foo", Pointer(UNIT)), "void (*foo()) {}")
 
 
 def test_write_param():
@@ -85,7 +91,55 @@ def test_write_param():
 def test_write_declare():
     f = Function("foo", UNIT)
     f.block += Variable(U8)
-    assert_write(f, """\
+    assert_write(
+        f,
+        """\
         void foo() {
           uint8_t v0;
-        }""")
+        }""",
+    )
+
+
+def test_write_loop():
+    f = Function("foo", UNIT)
+    with f.block.loop(Literal(1)) as b:
+        b <<= Literal(0)
+    assert_write(
+        f,
+        """\
+        void foo() {
+          while (1) {
+            0;
+          }
+        }""",
+    )
+
+
+def test_write_branch():
+    f = Function("foo", UNIT)
+    with f.block.cases().when(Literal(1)) as b:
+        b <<= Literal(0)
+    assert_write(
+        f,
+        """\
+        void foo() {
+          if (1) {
+            0;
+          } else {}
+        }""",
+    )
+
+
+def test_write_interpolate():
+    f = Function("foo", U8)
+    v = Variable(U8)
+    f.block += v
+    f.block <<= Interp("return {x}", x=v)
+    assert_write(
+        f,
+        """\
+        uint8_t foo() {
+          uint8_t v0;
+          return v0;
+        }""",
+    )
