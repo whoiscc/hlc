@@ -31,39 +31,41 @@ class Array:
         return hash((self.inner, self.size))
 
 
-def write(writer, ty, then=None):
-    match ty:
-        case Base():
-            type_names = {UNIT: "void", I32: "int32_t", U8: "uint8_t", BOOL: "int"}
-            writer <<= type_names[ty]
-            if then is not None:
-                writer.space()
-                then(writer)
-        case Pointer():
+def write(writer, ty, name=None):
+    def transform(ty, name):
+        match ty:
+            case Base():
+                type_names = {UNIT: "void", I32: "int32_t", U8: "uint8_t", BOOL: "int"}
+                return type_names[ty], [("<<=", name)] if name is not None else []
+            case Pointer():
+                base_ty, inner = transform(ty.inner, name)
+                return base_ty, [("parens", [("<<=", "*"), *inner])]
+            case Array():
+                base_ty, inner = transform(ty.inner, name)
+                return base_ty, [("parens", [*inner, ("brackets", [("<<=", str(ty.size))])])]
+            case _:
+                raise TypeError(ty)
 
-            def inner(writer):
+    base_ty, commands = transform(ty, name)
+    writer <<= base_ty
+    if not commands:
+        return
+    writer.space()
+
+    def execute(writer, command):
+        match command:
+            case ("<<=", content):
+                writer <<= content
+            case ("parens", commands):
                 with writer.parens():
-                    writer <<= "*"
-                    if then is not None:
-                        then(writer)
+                    for command in commands:
+                        execute(writer, command)
+            case ("brackets", commands):
+                with writer.brackets():
+                    for command in commands:
+                        execute(writer, command)
+            case _:
+                raise ValueError(command)
 
-            write(writer, ty.inner, inner)
-        case Array():
-
-            def inner(writer):
-                with writer.parens():
-                    if then is not None:
-                        then(writer)
-                    with writer.brackets():
-                        writer <<= str(ty.size)
-
-            write(writer, ty.inner, inner)
-        case _:
-            raise TypeError(ty)
-
-
-def write_typed(writer, name, ty):
-    def then(writer):
-        writer <<= name
-
-    write(writer, ty, then)
+    for command in commands:
+        execute(writer, command)
