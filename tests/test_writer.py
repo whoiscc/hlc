@@ -37,4 +37,4 @@ def test_braces():
     w = Writer()
     with w.braces():
         w <<= "hello"
-    assert w.content == "{\n  hello\n}"
+    assert w.content == "{hello}"

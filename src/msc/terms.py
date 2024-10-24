@@ -1,5 +1,7 @@
 from contextlib import contextmanager
 
+from msc import ty
+
 
 class Function:
     def __init__(self, identifier, return_ty):
@@ -107,5 +109,40 @@ class Op:
         self.exprs = exprs
 
 
-# def write(term, writer):
-#     pass
+def write(writer, term, var_names=None):
+    var_names = var_names or {}
+
+    def declare(var):
+        assert var not in var_names
+        name = f"v{len(var_names)}"
+        var_names[var] = name
+        return name
+
+    match term:
+        case Function():
+
+            def typed(writer):
+                writer <<= term.id
+                with writer.parens():
+                    for var, _ in zip(term.params, writer.commas()):
+                        name = declare(var)
+                        ty.writer_declare(writer, var.ty, name)
+
+            ty.write(writer, term.return_ty, typed)
+            writer.space()
+            write(writer, term.block, var_names)
+
+        case Block():
+            with writer.braces():
+                if term.stmts:
+                    writer.newline()
+                for _, stmt in zip(writer.lines(), term.stmts):
+                    write(writer, stmt, var_names)
+
+        case Declare():
+            name = declare(term.var)
+            ty.writer_declare(writer, term.var.ty, name)
+            writer <<= ";"
+
+        case _:
+            raise TypeError(term)

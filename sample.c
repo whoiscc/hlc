@@ -9,3 +9,7 @@ int bar1 = sizeof(uint8_t (*(*)));
 int bar2 = sizeof(uint8_t (([32])[32]));
 int bar3 = sizeof(uint8_t (*([32])));
 int bar4 = sizeof(uint8_t ((*)[32]));
+
+int (*baz1());
+int (*baz1()) { return 0; }
+int (*(*baz2(int (*x))));

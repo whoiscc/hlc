@@ -60,9 +60,7 @@ class Writer:
     @contextmanager
     def braces(self):
         with self.surround(("{", "}")), self.indent():
-            self.newline()
             yield
-            self.newline()
 
     def lines(self):
         return self.delimit("\n")

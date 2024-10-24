@@ -1,4 +1,7 @@
-from msc.terms import Function
+from textwrap import dedent
+from msc.terms import Function, Variable, write
+from msc.ty import U8, UNIT
+from msc import Writer
 
 
 def test_empty_function():
@@ -62,3 +65,27 @@ def test_multiple_cases():
     assert stmt.check == "another if check"
     assert stmt.pos.stmts == ["another if stmt"]
     assert stmt.neg.stmts == []
+
+def assert_write(term, content):
+    w = Writer()
+    write(w, term)
+    assert w.content == dedent(content)
+
+
+def test_write_empty_function():
+    assert_write(Function("foo", UNIT), "void foo() {}")
+
+
+def test_write_param():
+    f = Function("foo", UNIT)
+    f += Variable(U8)
+    assert_write(f, "void foo(uint8_t v0) {}")
+
+
+def test_write_declare():
+    f = Function("foo", UNIT)
+    f.block += Variable(U8)
+    assert_write(f, """\
+        void foo() {
+          uint8_t v0;
+        }""")
