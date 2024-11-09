@@ -111,6 +111,16 @@ class Op:
 
 class Interp:
     def __init__(self, fmt, **variables):
+        # it may seem to be acceptable for general expressions to participant the interpolation
+        # that exposes one technical difficulty: str.format(...) does not work with our `Writer`
+        # based output mechanism. we will need to accept or reconstruct a structured representation
+        # of the interpolated snippet, but that goes against the purpose: an easy (and dirty) way to
+        # cover the parts of C language spec that we don't care in details
+        # on the other hand, inputting the variables exactly preserves the (probably only) details
+        # we care about: data dependency of the interpolated snippet
+        # last but not least, a limited capability may also help to shrink the scope of the use of
+        # this item, preventing the overuse
+        assert all(isinstance(var, Variable) for var in variables.values())
         self.fmt = fmt
         self.vars = variables
 
@@ -176,6 +186,9 @@ def write(writer, term, var_names=None):
             match term.value:
                 case int():
                     writer <<= str(term.value)
+
+        case Variable():
+            writer <<= var_names[term]
 
         case Interp():
             writer <<= term.fmt.format(**{k: var_names[var] for k, var in term.vars.items()})
